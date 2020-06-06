@@ -1,16 +1,8 @@
 defmodule Bowling do
   @doc """
-  Creates a new game of bowling that can be used to store the results of
-  the game
+  A game is made up of rolls and frames. A frame consists of varying number of rolls depending on
+  whether the roll is a strike, a spare or not, and depending on if the roll is in the last frame.
   """
-
-  # I feel like the Kata setup pushes you in the wrong direction.
-  # It's forcing you to have state when you don't need it, as you get
-  # all of the rolls in a list. We could just iterate through that
-  # list and calculate the score. But having to validate things like
-  # No extra rolls adds to the complexity. Is there a way to build those
-  # validations into the state model? MISU soup.
-
   def start do
     %{rolls: [], frames: []}
   end
@@ -83,14 +75,16 @@ defmodule Bowling do
   end
 
   @doc """
-  Returns the score of a given game of bowling if the game is complete.
-  If the game isn't complete, it returns a helpful message.
+  Calculating the score requires knowing up to 2 more rolls than the current roll. We iterate
+  through all current rolls 3 at a time in order to be able to calculate what we need. Once we
+  have what we need we do 3 whichever calculation we need to do if it is a spare, strike or a
+  normal roll.
   """
-  @spec score(any) :: integer | String.t()
+  def score(%{frames: frames}) when length(frames) < 10 do
+    {:error, "Score cannot be taken until the end of the game"}
+  end
 
-  def score(%{frames: frames}) when length(frames) < 10,
-    do: {:error, "Score cannot be taken until the end of the game"}
-
+  # Ensures we can only score when we have all of the information required to calculate it.
   def score(%{frames: frames, rolls: rolls}) when length(frames) == 10 do
     case List.last(frames) do
       {10} ->
@@ -111,6 +105,7 @@ defmodule Bowling do
     do_score(rolls, 0)
   end
 
+  # Spare at the end
   def do_score([first, second, third], total_score) when first + second == 10 do
     10 + third + total_score
   end
